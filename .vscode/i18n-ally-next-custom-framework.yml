@@ -1,0 +1,14 @@
+languageIds:
+  - typescript
+  - typescriptreact
+
+usageMatchRegex:
+  - "(?<!\\w)t\\(\\s*['\"`]({key})['\"`]"
+
+refactorTemplates:
+  - "t('$1')"
+  - "{t('$1')}"
+
+namespace: false
+namespaceDelimiter: "."
+monopoly: true
