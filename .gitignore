@@ -26,3 +26,7 @@ gitignore
 # System Files
 .DS_Store
 Thumbs.db
+
+## Panda
+styled-system
+styled-system-studio

@@ -4,6 +4,7 @@
     "description": "",
     "type": "module",
     "scripts": {
+        "prepare": "panda codegen",
         "dev": "bunx --bun vite",
         "build": "bunx --bun vite build",
         "start": "bun server.ts",
@@ -29,11 +30,13 @@
         "vitest": "^4.0.0"
     },
     "dependencies": {
+        "@ark-ui/solid": "^5.39.1",
         "@remix-run/cookie": "^0.5.4",
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "^2.0.0-next.19",
         "@solidjs/web": "^2.0.0-rc.4",
         "es-toolkit": "^1.52.0",
+        "lucide-solid": "^1.38.0",
         "solid-js": "^2.0.0-rc.4",
         "zod": "^4.5.4"
     }

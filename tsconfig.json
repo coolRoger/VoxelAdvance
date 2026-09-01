@@ -17,8 +17,10 @@
         "strict": true,
         "skipLibCheck": true,
         "types": ["vite/client", "bun"],
+        "baseUrl": "./",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "styled-system/*": ["./styled-system/*"]
         }
     }
 }

@@ -2,7 +2,7 @@
 // (defaults applied — see env.ts).
 import { Title } from "@solidjs/meta";
 import { Loading } from "solid-js";
-import "./App.css";
+import "./index.css";
 import { Router } from "./router";
 
 // The app root: the router and the site-wide layout live here. Pages are

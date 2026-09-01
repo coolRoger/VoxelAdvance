@@ -12,8 +12,6 @@ export default defineConfig(({ mode }) => {
         ...pick(sys_env, ["SESSION_SECRET", "VITE_APP_NAME"]),
     } as const;
 
-    console.log("@: ", path.resolve(process.cwd(), "src"));
-
     return {
         // Turnkey streaming SSR: no index.html and no entry files — the plugin
         // generates the entries around src/App.tsx, wrapped in src/Document.tsx.
@@ -65,6 +63,7 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 "@": path.resolve(process.cwd(), "src"),
+                "styled-system": path.resolve(process.cwd(), "styled-system"),
             },
         },
         server: {
