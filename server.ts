@@ -1,12 +1,11 @@
 // The production server for the SSR app. Bun speaks the web Request/Response
 // API natively, so the built handler can be used without an adapter.
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 // The generated server bundle does not emit declarations.
 // @ts-expect-error generated at build time
 import { handleRequest } from "./dist/server/server.js";
 
-const root = path.dirname(fileURLToPath(import.meta.url));
+const root = path.dirname(Bun.fileURLToPath(import.meta.url));
 const clientRoot = path.join(root, "dist/client");
 const port = Number(Bun.env.PORT) || 3000;
 
@@ -21,6 +20,7 @@ const server = Bun.serve({
                 clientRoot,
                 `.${decodeURIComponent(url.pathname)}`,
             );
+
             if (assetPath.startsWith(`${clientRoot}${path.sep}`)) {
                 const asset = Bun.file(assetPath);
                 if (await asset.exists()) {

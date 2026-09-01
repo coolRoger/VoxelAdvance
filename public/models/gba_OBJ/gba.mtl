@@ -1,0 +1,18 @@
+# Blender 5.0.1 MTL File: 'gba.blend'
+# www.blender.org
+
+newmtl m_gba_console
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.400000
+d 1.000000
+illum 2
+Ps 0.000000
+Pc 0.000000
+Pcr 0.030000
+aniso 0.000000
+anisor 0.000000
+map_Kd ../../../../../../gba_bcolor.png
+map_Pm ../../../../../../gba_metal.png
+map_Pr ../../../../../../gba_rough.png
+map_Bump -bm 2.000000 ../../../../../../gba_norm.png

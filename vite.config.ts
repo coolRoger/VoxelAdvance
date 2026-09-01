@@ -1,3 +1,4 @@
+import path from "node:path";
 import solid from "@solidjs/vite-plugin";
 import { pick } from "es-toolkit/compat";
 import { fileRoutes } from "filesystem-routing/vite";
@@ -7,11 +8,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig(({ mode }) => {
     const sys_env = loadEnv(mode, process.cwd(), "");
 
-    console.log({ sys_env });
-
     const env = {
         ...pick(sys_env, ["SESSION_SECRET", "VITE_APP_NAME"]),
     } as const;
+
+    console.log("@: ", path.resolve(process.cwd(), "src"));
 
     return {
         // Turnkey streaming SSR: no index.html and no entry files — the plugin
@@ -61,6 +62,11 @@ export default defineConfig(({ mode }) => {
             // server-only code they import — never enter the client bundle.
             fileRoutes({ httpMethods: true, types: true }),
         ],
+        resolve: {
+            alias: {
+                "@": path.resolve(process.cwd(), "src"),
+            },
+        },
         server: {
             port: 3000,
         },
