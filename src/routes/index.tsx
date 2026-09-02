@@ -1,5 +1,4 @@
 import type { RouteDefinition } from "@solidjs/router";
-import { Button } from "@/components/ui/button";
 
 // The preload starts these fetches as navigation begins — and it doubles as
 // the page's single-flight manifest: after a mutation, the server reruns it
@@ -12,7 +11,6 @@ export default function Home() {
     return (
         <main>
             <p>Home</p>
-            <Button>Park UI</Button>
         </main>
     );
 }

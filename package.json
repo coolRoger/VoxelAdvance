@@ -36,9 +36,12 @@
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "^2.0.0-next.19",
         "@solidjs/web": "^2.0.0-rc.4",
+        "@tailwindcss/vite": "^4.3.3",
+        "daisyui": "^5.7.27",
         "es-toolkit": "^1.52.0",
         "lucide-solid": "^1.38.0",
         "solid-js": "^2.0.0-rc.4",
+        "tailwindcss": "^4.3.3",
         "zod": "^4.5.4"
     }
 }

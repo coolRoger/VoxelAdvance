@@ -1,5 +1,6 @@
 import path from "node:path";
 import solid from "@solidjs/vite-plugin";
+import tailwindcss from "@tailwindcss/vite";
 import { pick } from "es-toolkit/compat";
 import { fileRoutes } from "filesystem-routing/vite";
 import { loadEnv } from "vite";
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         plugins: [
+            tailwindcss(),
             solid({
                 start: {
                     // Fetch-style chain fronting every request: dispatches API routes.
