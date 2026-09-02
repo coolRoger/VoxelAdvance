@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "prepare": "panda codegen",
+        "park-ui-add": "bunx --bun @park-ui/cli add",
         "dev": "bunx --bun vite",
         "build": "bunx --bun vite build",
         "start": "bun server.ts",
