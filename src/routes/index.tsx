@@ -83,7 +83,13 @@ function GbaViewer(props: { shellColor: string }) {
         shellMaterial = createMaterial(props.shellColor, 0.42);
         const controlsMaterial = createMaterial(fixedColors.controls, 0.36);
         const accentMaterial = createMaterial(fixedColors.accent, 0.38);
-        const screenMaterial = createMaterial(fixedColors.screen, 0.2, 0.08);
+        const screenMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x080b12,
+            roughness: 0.2,
+            metalness: 0.08,
+            clearcoat: 1,
+            clearcoatRoughness: 0.1,
+        });
         const hardwareMaterial = createMaterial(
             fixedColors.hardware,
             0.32,
@@ -119,19 +125,60 @@ function GbaViewer(props: { shellColor: string }) {
         gameScreen = document.createElement("canvas");
         gameScreen.width = 240;
         gameScreen.height = 160;
+        const gameContext = gameScreen.getContext("2d");
+        gameContext?.fillRect(0, 0, 240, 160);
         const gameTexture = new THREE.CanvasTexture(gameScreen);
         gameTexture.colorSpace = THREE.SRGBColorSpace;
         gameTexture.minFilter = THREE.NearestFilter;
         gameTexture.magFilter = THREE.NearestFilter;
-        const gameMaterial = new THREE.MeshBasicMaterial({ map: gameTexture });
-        const screenWidth = 0.066;
+        const gameMaterial = new THREE.MeshBasicMaterial({
+            map: gameTexture,
+            toneMapped: false,
+        });
+        const screenWidth = 0.0575;
         const screenHeight = screenWidth * (2 / 3);
-        const gamePlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(screenWidth, screenHeight),
-            gameMaterial,
+        const cornerRadius = 0.0016;
+        const screenShape = new THREE.Shape();
+        screenShape.moveTo(-screenWidth / 2 + cornerRadius, -screenHeight / 2);
+        screenShape.lineTo(screenWidth / 2 - cornerRadius, -screenHeight / 2);
+        screenShape.quadraticCurveTo(
+            screenWidth / 2,
+            -screenHeight / 2,
+            screenWidth / 2,
+            -screenHeight / 2 + cornerRadius,
         );
-        gamePlane.position.set(0, 0.043, 0.0084);
-        gamePlane.renderOrder = 10;
+        screenShape.lineTo(screenWidth / 2, screenHeight / 2 - cornerRadius);
+        screenShape.quadraticCurveTo(
+            screenWidth / 2,
+            screenHeight / 2,
+            screenWidth / 2 - cornerRadius,
+            screenHeight / 2,
+        );
+        screenShape.lineTo(-screenWidth / 2 + cornerRadius, screenHeight / 2);
+        screenShape.quadraticCurveTo(
+            -screenWidth / 2,
+            screenHeight / 2,
+            -screenWidth / 2,
+            screenHeight / 2 - cornerRadius,
+        );
+        screenShape.lineTo(-screenWidth / 2, -screenHeight / 2 + cornerRadius);
+        screenShape.quadraticCurveTo(
+            -screenWidth / 2,
+            -screenHeight / 2,
+            -screenWidth / 2 + cornerRadius,
+            -screenHeight / 2,
+        );
+        const screenGeometry = new THREE.ShapeGeometry(screenShape);
+        const position = screenGeometry.getAttribute("position");
+        const uv = new Float32Array(position.count * 2);
+        for (let index = 0; index < position.count; index += 1) {
+            uv[index * 2] = position.getX(index) / screenWidth + 0.5;
+            uv[index * 2 + 1] = position.getY(index) / screenHeight + 0.5;
+        }
+        screenGeometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+        const gamePlane = new THREE.Mesh(screenGeometry, gameMaterial);
+        gamePlane.position.set(0, 0.0416, 0.00818);
+        gamePlane.renderOrder = 3;
 
         const startEmulator = async () => {
             const [{ GBA }, biosResponse, romResponse] = await Promise.all([
@@ -201,7 +248,7 @@ function GbaViewer(props: { shellColor: string }) {
                         child.material = controlsMaterial;
                     } else if (name.includes("screen_glass")) {
                         child.material = screenMaterial;
-                        child.visible = false;
+                        child.renderOrder = 1;
                     } else if (name.includes("led")) {
                         child.material = ledMaterial;
                     } else if (
@@ -262,7 +309,7 @@ function GbaViewer(props: { shellColor: string }) {
             controls.dispose();
             gameTexture.dispose();
             gameMaterial.dispose();
-            gamePlane.geometry.dispose();
+            screenGeometry.dispose();
             renderer.dispose();
             renderer.domElement.remove();
             scene.traverse((object) => {
