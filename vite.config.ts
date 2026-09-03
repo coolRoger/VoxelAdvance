@@ -3,6 +3,7 @@ import solid from "@solidjs/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { pick } from "es-toolkit/compat";
 import { fileRoutes } from "filesystem-routing/vite";
+import { nitro } from "nitro/vite";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -61,6 +62,7 @@ export default defineConfig(({ mode }) => {
             // routes). One router serves both sides: handler modules — and the
             // server-only code they import — never enter the client bundle.
             fileRoutes({ httpMethods: true, types: true }),
+            nitro({ serverEntry: false }),
         ],
         resolve: {
             alias: {

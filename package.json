@@ -10,6 +10,7 @@
         "build": "bunx --bun vite build",
         "start": "bun server.ts",
         "serve": "bunx --bun vite preview",
+        "preview": "bunx --bun vite preview",
         "format": "biome format --write"
     },
     "license": "MIT",
@@ -42,6 +43,7 @@
         "es-toolkit": "^1.52.0",
         "gba-game": "^2.0.0",
         "lucide-solid": "^1.38.0",
+        "nitro": "^3.0.260610-beta",
         "solid-js": "^2.0.0-rc.4",
         "tailwindcss": "^4.3.3",
         "three": "^0.185.1",
