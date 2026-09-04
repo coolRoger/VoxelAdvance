@@ -9,7 +9,6 @@
 - 构建工具：Vite 8
 - 路由：`@solidjs/router` 2.x + `filesystem-routing`
 - 样式：Panda CSS 1.x + Tailwind CSS 4 + DaisyUI 5
-- 无头组件：Ark UI Solid；仓库保留 Park UI 配置
 - 图标：`lucide-solid`
 - 校验：Zod 4
 - 格式化与静态检查：Biome 2
