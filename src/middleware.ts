@@ -5,7 +5,6 @@
 // session helpers built on it) work here exactly as in application code.
 
 import routes from "virtual:file-routes";
-import { getRequestEvent } from "@solidjs/web";
 import { createAPIHandler } from "filesystem-routing/api";
 
 // createAPIHandler serves the GET/POST/... exports of route modules

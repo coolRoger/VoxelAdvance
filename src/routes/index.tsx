@@ -1,5 +1,6 @@
 import type { RouteDefinition } from "@solidjs/router";
-import mGBA, { type mGBAEmulator } from "@thenick775/mgba-wasm";
+import type { GBA } from "gba-game";
+import { GameBoyAdvanceSoftwareRenderer } from "gba-game";
 import { createEffect, createSignal, For, onSettled, Show } from "solid-js";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -37,7 +38,7 @@ function GbaViewer(props: { shellColor: string }) {
     });
     const [error, setError] = createSignal(false, { name: "gbaModelError" });
     let shellMaterial: THREE.MeshStandardMaterial | undefined;
-    let emulator: mGBAEmulator | undefined;
+    let emulator: GBA | undefined;
     let gameScreen: HTMLCanvasElement | undefined;
 
     createEffect(
@@ -180,54 +181,46 @@ function GbaViewer(props: { shellColor: string }) {
         gamePlane.renderOrder = 3;
 
         const startEmulator = async () => {
-            if (!gameScreen) throw new Error("游戏画布初始化失败");
-            if (!globalThis.crossOriginIsolated) {
-                throw new Error("WASM 模拟器需要跨源隔离环境");
-            }
-            emulator = await mGBA({ canvas: gameScreen });
-            await emulator.FSInit();
-            emulator.setCoreSettings({
-                audioSync: true,
-                videoSync: true,
-                threadedVideo: true,
-                rewindEnable: false,
-                autoSaveStateEnable: true,
-                restoreAutoSaveStateOnLoad: true,
-            });
-            emulator.bindKey("W", "Up");
-            emulator.bindKey("A", "Left");
-            emulator.bindKey("S", "Down");
-            emulator.bindKey("D", "Right");
-            emulator.bindKey("Q", "L");
-            emulator.bindKey("P", "R");
-            emulator.bindKey("J", "A");
-            emulator.bindKey("K", "B");
-            emulator.bindKey("N", "Start");
-            emulator.bindKey("M", "Select");
-            emulator.addCoreCallbacks({
-                videoFrameEndedCallback: () => {
-                    gameTexture.needsUpdate = true;
-                },
-            });
-            const biosResponse = await fetch("/games/gba-bios.bin");
-            const romResponse = await fetch("/games/pokemon_emerald_cn.gba");
-            if (!biosResponse.ok || !romResponse.ok) {
+            const [{ GBA }, biosResponse, romResponse] = await Promise.all([
+                import("gba-game"),
+                fetch("/games/gba-bios.bin"),
+                fetch("/games/pokemon_emerald_cn.gba"),
+            ]);
+            if (!biosResponse.ok || !romResponse.ok || !gameScreen) {
                 throw new Error("GBA 游戏资源加载失败");
             }
-            emulator.FS.writeFile(
-                "/gba-bios.bin",
-                new Uint8Array(await biosResponse.arrayBuffer()),
+            emulator = new GBA({ throttle: 16 });
+            emulator.logLevel = emulator.LOG_ERROR;
+            emulator.keypad.KEYCODE_UP = 87;
+            emulator.keypad.KEYCODE_LEFT = 65;
+            emulator.keypad.KEYCODE_DOWN = 83;
+            emulator.keypad.KEYCODE_RIGHT = 68;
+            emulator.keypad.KEYCODE_L = 81;
+            emulator.keypad.KEYCODE_R = 80;
+            emulator.keypad.KEYCODE_A = 74;
+            emulator.keypad.KEYCODE_B = 75;
+            emulator.keypad.KEYCODE_START = 78;
+            emulator.keypad.KEYCODE_SELECT = 77;
+            emulator.keypad.eatInput = true;
+            emulator.setCanvasDirect(gameScreen);
+            emulator.video.drawCallback = () => {
+                gameTexture.needsUpdate = true;
+            };
+            emulator.setBios(await biosResponse.arrayBuffer());
+            const loaded = await emulator.setRomAsync(
+                await romResponse.arrayBuffer(),
             );
-            emulator.FS.writeFile(
-                "/pokemon_emerald_cn.gba",
-                new Uint8Array(await romResponse.arrayBuffer()),
-            );
-            emulator.loadGame("/pokemon_emerald_cn.gba");
+            if (!loaded) throw new Error("GBA ROM 无法启动");
+            for (const object of emulator.video.renderPath.oam.objs) {
+                object.pushPixel = GameBoyAdvanceSoftwareRenderer.pushPixel;
+            }
+            emulator.runStable();
         };
 
         const resumeAudio = () => {
-            emulator?.resumeAudio();
+            void emulator?.audio.context?.resume();
         };
+
         window.addEventListener("keydown", resumeAudio, { once: true });
         window.addEventListener("pointerdown", resumeAudio, { once: true });
 
@@ -312,9 +305,8 @@ function GbaViewer(props: { shellColor: string }) {
             observer.disconnect();
             window.removeEventListener("keydown", resumeAudio);
             window.removeEventListener("pointerdown", resumeAudio);
-            emulator?.pauseGame();
-            emulator?.quitGame();
-            emulator?.quitMgba();
+            emulator?.pause();
+            emulator?.audio.context?.close();
             controls.dispose();
             gameTexture.dispose();
             gameMaterial.dispose();
