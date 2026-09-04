@@ -5,8 +5,22 @@
 // session helpers built on it) work here exactly as in application code.
 
 import routes from "virtual:file-routes";
+import { getRequestEvent } from "@solidjs/web";
 import { createAPIHandler } from "filesystem-routing/api";
 
 // createAPIHandler serves the GET/POST/... exports of route modules
 // (see src/routes/api) and passes everything else down the chain.
-export default [createAPIHandler(routes)];
+
+async function setHeaders(request: Request, next: () => Promise<Response>) {
+    const event = getRequestEvent()!;
+
+    console.log({ event });
+
+    const response = await next();
+
+    response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+
+    return response;
+}
+export default [setHeaders, createAPIHandler(routes)];

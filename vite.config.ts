@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     const sys_env = loadEnv(mode, process.cwd(), "");
 
     const env = {
-        ...pick(sys_env, ["SESSION_SECRET", "VITE_APP_NAME"]),
+        ...pick(sys_env, ["SESSION_SECRET", "VITE_APP_NAME", "APP_PORT"]),
     } as const;
 
     return {
@@ -71,7 +71,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         server: {
-            port: 3000,
+            port: Number(env.APP_PORT ?? 3000),
         },
         build: {
             target: "esnext",

@@ -7,7 +7,7 @@ import { handleRequest } from "./dist/server/server.js";
 
 const root = path.dirname(Bun.fileURLToPath(import.meta.url));
 const clientRoot = path.join(root, "dist/client");
-const port = Number(Bun.env.PORT) || 3000;
+const port = Number(process.env.APP_PORT) || 3000;
 
 const server = Bun.serve({
     port,
@@ -27,7 +27,9 @@ const server = Bun.serve({
                     return new Response(
                         request.method === "HEAD" ? null : asset,
                         {
-                            headers: { "Content-Type": asset.type },
+                            headers: {
+                                "Content-Type": asset.type,
+                            },
                         },
                     );
                 }
@@ -35,12 +37,14 @@ const server = Bun.serve({
         }
 
         try {
-            return await handleRequest(request, {
+            const response = await handleRequest(request, {
                 event: {
                     nativeEvent: request,
                     remoteAddress: server.requestIP(request),
                 },
             });
+
+            return response;
         } catch (error) {
             console.error(error);
             return new Response(
