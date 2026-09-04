@@ -11,11 +11,10 @@ import { createAPIHandler } from "filesystem-routing/api";
 // createAPIHandler serves the GET/POST/... exports of route modules
 // (see src/routes/api) and passes everything else down the chain.
 
-async function setHeaders(request: Request, next: () => Promise<Response>) {
-    const event = getRequestEvent()!;
-
-    console.log({ event });
-
+async function COOP_COEP_Headers(
+    __request: Request,
+    next: () => Promise<Response>,
+) {
     const response = await next();
 
     response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
@@ -23,4 +22,4 @@ async function setHeaders(request: Request, next: () => Promise<Response>) {
 
     return response;
 }
-export default [setHeaders, createAPIHandler(routes)];
+export default [COOP_COEP_Headers, createAPIHandler(routes)];

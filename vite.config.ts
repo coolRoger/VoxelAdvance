@@ -72,6 +72,10 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: Number(env.APP_PORT ?? 3000),
+            headers: {
+                "Cross-Origin-Embedder-Policy": "require-corp",
+                "Cross-Origin-Opener-Policy": "same-origin",
+            },
         },
         build: {
             target: "esnext",
