@@ -5,13 +5,12 @@ import type { GbaEmulatorOptions, GbaEmulatorSession } from "./types";
 export async function createGbaEmulator(
     options: GbaEmulatorOptions,
 ): Promise<GbaEmulatorSession> {
-    const [{ GBA }, biosResponse, romResponse] = await Promise.all([
+    const [{ GBA }, biosResponse] = await Promise.all([
         import("gba-game"),
         fetch("/games/gba-bios.bin"),
-        fetch("/games/pokemon_emerald_cn.gba"),
     ]);
 
-    if (!biosResponse.ok || !romResponse.ok) {
+    if (!biosResponse.ok) {
         throw new Error("GBA 游戏资源加载失败");
     }
 
@@ -32,7 +31,7 @@ export async function createGbaEmulator(
     emulator.video.drawCallback = options.onFrame;
     emulator.setBios(await biosResponse.arrayBuffer());
 
-    const loaded = await emulator.setRomAsync(await romResponse.arrayBuffer());
+    const loaded = await emulator.setRomAsync(options.gameROMBuffer);
     if (!loaded) {
         throw new Error("GBA ROM 无法启动");
     }

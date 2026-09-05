@@ -1,5 +1,5 @@
-import type { RouteDefinition } from "@solidjs/router";
-import { createSignal, For } from "solid-js";
+import { query, type RouteDefinition } from "@solidjs/router";
+import { createMemo, createSignal, For, onSettled, Show } from "solid-js";
 import GbaDevice from "@/components/gba-device";
 
 export const route = {
@@ -21,12 +21,52 @@ export default function Home() {
         { name: "gbaShellColor" },
     );
 
+    const [gameROMState, setGameROMState] = createSignal<{
+        status: boolean;
+        message: string;
+        data?: ArrayBuffer;
+    }>();
+
+    onSettled(() => {
+        const fetchGameROM = async () => {
+            try {
+                const response = await fetch(`/games/pokemon_emerald_cn.gba`);
+
+                if (!response.ok) {
+                    setGameROMState({
+                        status: false,
+                        message: "GBA 游戏资源加载失败",
+                    });
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+
+                setGameROMState({
+                    status: true,
+                    message: "GBA 游戏资源加载成功",
+                    data: arrayBuffer,
+                });
+            } catch (err) {
+                const _err = err as Error;
+                setGameROMState({
+                    status: false,
+                    message: _err.message,
+                });
+            }
+        };
+
+        void fetchGameROM();
+    });
+
     return (
         <main class="relative h-screen w-screen overflow-hidden bg-[#f6f3ff] text-slate-900">
             <div class="pointer-events-none absolute -top-36 -left-24 h-96 w-96 rounded-full bg-violet-300/35 blur-3xl" />
             <div class="pointer-events-none absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-fuchsia-200/35 blur-3xl" />
 
-            <GbaDevice shellColor={shellColor()} />
+            <GbaDevice
+                shellColor={shellColor()}
+                gameROMBuffer={gameROMState()?.data}
+            />
 
             <a
                 href="/"

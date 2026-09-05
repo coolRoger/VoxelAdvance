@@ -1,6 +1,7 @@
 export type GbaEmulatorOptions = {
     canvas: HTMLCanvasElement;
     onFrame: () => void;
+    gameROMBuffer: ArrayBuffer;
 };
 
 export type GbaEmulatorSession = {

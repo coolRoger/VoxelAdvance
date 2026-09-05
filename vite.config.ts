@@ -11,7 +11,12 @@ export default defineConfig(({ mode }) => {
     const sys_env = loadEnv(mode, process.cwd(), "");
 
     const env = {
-        ...pick(sys_env, ["SESSION_SECRET", "VITE_APP_NAME", "APP_PORT"]),
+        ...pick(sys_env, [
+            "SESSION_SECRET",
+            "VITE_APP_NAME",
+            "APP_PORT",
+            "APP_URL",
+        ]),
     } as const;
 
     return {
