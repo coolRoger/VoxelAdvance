@@ -46,6 +46,8 @@ export interface GBAKeyMapping {
     RIGHT: string;
     L: string;
     R: string;
+    PowerON: string;
+    PowerOFF: string;
 }
 
 export const gbaSetting = pgTable("gba_setting", {

@@ -19,6 +19,7 @@ export type GbaRendererOptions = {
 
 export type GbaRenderer = {
     setShellColor: (color: string) => void;
+    setPowerState: (poweredOn: boolean) => void;
     readonly getGameCanvas: () => HTMLCanvasElement;
     readonly invalidateGameTexture: () => void;
     dispose: () => void;
@@ -220,6 +221,11 @@ export function createGbaRenderer(options: GbaRendererOptions): GbaRenderer {
 
     return {
         setShellColor: (color) => shellMaterial.color.set(color),
+        setPowerState: (poweredOn) => {
+            screenMaterial.color.set(poweredOn ? 0x080b12 : 0x020205);
+            screenMaterial.emissive.set(poweredOn ? 0x000000 : 0x000000);
+            ledMaterial.emissiveIntensity = poweredOn ? 1.4 : 0;
+        },
         getGameCanvas: () => gameScreen,
         invalidateGameTexture: () => {
             gameTexture.needsUpdate = true;

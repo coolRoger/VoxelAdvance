@@ -1,6 +1,9 @@
 import { query, type RouteDefinition } from "@solidjs/router";
-import { createMemo, createSignal, For, onSettled, Show } from "solid-js";
+import { createEffect, createSignal, For, onSettled, Show } from "solid-js";
 import GbaDevice from "@/components/gba-device";
+import { useDBContext } from "@/db/provider";
+import { GBASetting } from "@/db/repositry/gba_setting";
+import type { GBAKeyMapping } from "@/db/schema";
 
 export const route = {
     preload: () => {},
@@ -16,16 +19,30 @@ const shellColors = [
 ] as const;
 
 export default function Home() {
+    const dbContext = useDBContext();
     const [shellColor, setShellColor] = createSignal<string>(
         shellColors[0].value,
         { name: "gbaShellColor" },
     );
+    const [keyMapping, setKeyMapping] = createSignal<GBAKeyMapping>();
 
     const [gameROMState, setGameROMState] = createSignal<{
         status: boolean;
         message: string;
         data?: ArrayBuffer;
     }>();
+
+    createEffect(
+        () => dbContext?.db(),
+        (db) => {
+            if (!db) return;
+            void new GBASetting(db).load().then((settings) => {
+                setShellColor(settings.bodyColor);
+                setKeyMapping(settings.keyMapping);
+            });
+        },
+        { name: "loadGbaSettings" },
+    );
 
     onSettled(() => {
         const fetchGameROM = async () => {
@@ -66,6 +83,7 @@ export default function Home() {
             <GbaDevice
                 shellColor={shellColor()}
                 gameROMBuffer={gameROMState()?.data}
+                powerMapping={keyMapping()}
             />
 
             <a

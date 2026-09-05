@@ -40,13 +40,27 @@ export async function createGbaEmulator(
         object.pushPixel = GameBoyAdvanceSoftwareRenderer.pushPixel;
     }
     emulator.runStable();
+    let poweredOn = true;
 
     return {
-        pause: () => emulator.pause(),
-        resumeAudio: async () => {
+        powerOn: async () => {
+            if (poweredOn) {
+                await emulator.audio.context?.resume();
+                return;
+            }
+
+            poweredOn = true;
+            emulator.runStable();
             await emulator.audio.context?.resume();
         },
+        powerOff: () => {
+            if (!poweredOn) return;
+            poweredOn = false;
+            emulator.pause();
+            emulator.audio.context?.suspend();
+        },
         dispose: () => {
+            poweredOn = false;
             emulator.pause();
             void emulator.audio.context?.close();
         },

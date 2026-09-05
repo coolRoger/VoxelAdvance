@@ -8,8 +8,8 @@ import type { GbaEmulatorOptions, GbaEmulatorSession } from "./types";
  * here until its installed exports and initialization contract are verified.
  *
  * A future implementation should own BIOS/ROM loading, keyboard mapping,
- * canvas frame output, user-gesture audio resumption, and disposal, then
- * return the same GbaEmulatorSession shape as createGbaEmulator.
+ * canvas frame output, power control, and disposal, then return the same
+ * GbaEmulatorSession shape as createGbaEmulator.
  */
 export async function createMgbaWasmEmulator(
     _options: GbaEmulatorOptions,

@@ -2,10 +2,17 @@ import { createEffect, createSignal, onSettled, Show } from "solid-js";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
 import { createGbaEmulator } from "./emu-gba-game";
 import { createGbaRenderer, type GbaRenderer } from "./render";
+import type { GbaPowerMapping } from "./types";
+
+const DEFAULT_POWER_MAPPING: GbaPowerMapping = {
+    PowerON: "KeyZ",
+    PowerOFF: "KeyX",
+};
 
 export type GbaDeviceProps = {
     shellColor: string;
     gameROMBuffer?: ArrayBuffer;
+    powerMapping?: GbaPowerMapping;
 };
 
 export function GbaDevice(props: GbaDeviceProps) {
@@ -17,11 +24,38 @@ export function GbaDevice(props: GbaDeviceProps) {
         name: "gbaModelLoading",
     });
     const [error, setError] = createSignal(false, { name: "gbaModelError" });
+    const powerMapping = () => props.powerMapping ?? DEFAULT_POWER_MAPPING;
+    const [poweredOn, setPoweredOn] = createSignal(true, {
+        name: "gbaPoweredOn",
+    });
+
+    const handlePowerKey = (event: KeyboardEvent) => {
+        const mapping = powerMapping();
+        if (event.code === mapping.PowerON) {
+            event.preventDefault();
+            void emulator?.powerOn();
+            setPoweredOn(true);
+        } else if (event.code === mapping.PowerOFF) {
+            event.preventDefault();
+            emulator?.powerOff();
+            setPoweredOn(false);
+        }
+    };
 
     createEffect(
         () => props.shellColor,
-        (color) => renderer?.setShellColor(color),
+        (color) => {
+            renderer?.setShellColor(color);
+        },
         { name: "syncGbaShellColor" },
+    );
+
+    createEffect(
+        () => poweredOn(),
+        (isPoweredOn) => {
+            renderer?.setPowerState(isPoweredOn);
+        },
+        { name: "syncGbaPowerState" },
     );
 
     const startEmulator = async (gameROMBuffer: ArrayBuffer) => {
@@ -42,6 +76,7 @@ export function GbaDevice(props: GbaDeviceProps) {
                 return;
             }
             emulator = session;
+            if (!poweredOn()) session.powerOff();
         } catch (cause: unknown) {
             if (currentGeneration === emulatorGeneration) {
                 console.error("GBA 模拟器启动失败", cause);
@@ -60,6 +95,7 @@ export function GbaDevice(props: GbaDeviceProps) {
     );
 
     onSettled(() => {
+        window.addEventListener("keydown", handlePowerKey);
         renderer = createGbaRenderer({
             host,
             shellColor: props.shellColor,
@@ -72,6 +108,7 @@ export function GbaDevice(props: GbaDeviceProps) {
         }
 
         return () => {
+            window.removeEventListener("keydown", handlePowerKey);
             emulatorGeneration += 1;
             emulator?.dispose();
             emulator = undefined;
@@ -91,6 +128,30 @@ export function GbaDevice(props: GbaDeviceProps) {
                     <span class="loading loading-spinner loading-lg text-violet-700" />
                 </div>
             </Show>
+            <div class="pointer-events-auto absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+                <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    disabled={poweredOn()}
+                    onClick={() => {
+                        void emulator?.powerOn();
+                        setPoweredOn(true);
+                    }}
+                >
+                    Power On
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-error btn-sm"
+                    disabled={!poweredOn()}
+                    onClick={() => {
+                        emulator?.powerOff();
+                        setPoweredOn(false);
+                    }}
+                >
+                    Power Off
+                </button>
+            </div>
             <Show when={error()}>
                 <div
                     class="pointer-events-none absolute inset-0 grid place-items-center text-4xl text-rose-600"

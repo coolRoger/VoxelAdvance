@@ -16,6 +16,9 @@ const DEFAULT_KEY_MAPPING: GBAKeyMapping = {
 
     L: "KeyU",
     R: "KeyI",
+
+    PowerON: "KeyZ",
+    PowerOFF: "KeyX",
 };
 
 class GBASetting extends DBInstance {

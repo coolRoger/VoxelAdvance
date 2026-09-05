@@ -5,7 +5,12 @@ export type GbaEmulatorOptions = {
 };
 
 export type GbaEmulatorSession = {
-    pause: () => void;
-    resumeAudio: () => Promise<void>;
+    powerOn: () => Promise<void>;
+    powerOff: () => void;
     dispose: () => void;
+};
+
+export type GbaPowerMapping = {
+    PowerON: string;
+    PowerOFF: string;
 };
