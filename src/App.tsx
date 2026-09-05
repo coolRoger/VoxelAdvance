@@ -2,8 +2,9 @@
 // (defaults applied — see env.ts).
 import { Title } from "@solidjs/meta";
 import { Loading } from "solid-js";
-import "./index.css";
-import { Router } from "./router";
+import "@/index.css";
+import { DBProvider } from "@/db/provider";
+import { Router } from "@/router";
 
 // The app root: the router and the site-wide layout live here. Pages are
 // the modules under src/routes.
@@ -13,9 +14,11 @@ export default function App() {
             {(props) => (
                 <>
                     <Title>{process.env.VITE_APP_NAME}</Title>
-                    <Loading fallback={<main>Loading…</main>}>
-                        {props.children}
-                    </Loading>
+                    <DBProvider>
+                        <Loading fallback={<main>Loading…</main>}>
+                            {props.children}
+                        </Loading>
+                    </DBProvider>
                 </>
             )}
         </Router>

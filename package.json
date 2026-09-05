@@ -34,6 +34,8 @@
     },
     "dependencies": {
         "@ark-ui/solid": "^5.39.1",
+        "@electric-sql/pglite": "^0.5.8",
+        "@libsql/client": "^0.18.0",
         "@remix-run/cookie": "^0.5.4",
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "^2.0.0-next.19",
@@ -41,6 +43,7 @@
         "@tailwindcss/vite": "^4.3.3",
         "@thenick775/mgba-wasm": "2.5.1",
         "daisyui": "^5.7.27",
+        "drizzle-orm": "^0.45.2",
         "es-toolkit": "^1.52.0",
         "lucide-solid": "^1.38.0",
         "nitro": "^3.0.260610-beta",
