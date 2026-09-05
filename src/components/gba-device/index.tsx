@@ -128,30 +128,6 @@ export function GbaDevice(props: GbaDeviceProps) {
                     <span class="loading loading-spinner loading-lg text-violet-700" />
                 </div>
             </Show>
-            <div class="pointer-events-auto absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-2">
-                <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    disabled={poweredOn()}
-                    onClick={() => {
-                        void emulator?.powerOn();
-                        setPoweredOn(true);
-                    }}
-                >
-                    Power On
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-error btn-sm"
-                    disabled={!poweredOn()}
-                    onClick={() => {
-                        emulator?.powerOff();
-                        setPoweredOn(false);
-                    }}
-                >
-                    Power Off
-                </button>
-            </div>
             <Show when={error()}>
                 <div
                     class="pointer-events-none absolute inset-0 grid place-items-center text-4xl text-rose-600"
