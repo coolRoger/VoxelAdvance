@@ -21,4 +21,20 @@ async function COOP_COEP_Headers(
 
     return response;
 }
-export default [COOP_COEP_Headers, createAPIHandler(routes)];
+
+async function PGDataFile(__request: Request, next: () => Promise<Response>) {
+    if (__request.url.endsWith("pglite.data")) {
+        return new Response(
+            Bun.file("./node_modules/@electric-sql/pglite/dist/pglite.data"),
+            {
+                headers: {
+                    "Content-Type": "text/plain; charset=UTF-8",
+                },
+            },
+        );
+    }
+
+    return next();
+}
+
+export default [COOP_COEP_Headers, PGDataFile, createAPIHandler(routes)];

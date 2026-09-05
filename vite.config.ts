@@ -82,6 +82,13 @@ export default defineConfig(({ mode }) => {
                 "Cross-Origin-Opener-Policy": "same-origin",
             },
         },
+        // PGlite's runtime loads sibling `.wasm` and `.data` files through
+        // import.meta.url. Keep it unbundled in dev so Vite preserves those
+        // package-relative URLs instead of optimizing the dependency.
+        optimizeDeps: {
+            exclude: ["@electric-sql/pglite"],
+        },
+        assetsInclude: [/\.data$/],
         build: {
             target: "esnext",
             // Keep images as asset files instead of inlining them into the JS bundle.
