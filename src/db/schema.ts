@@ -76,6 +76,7 @@ export const gbaROM = pgTable("gba_rom", {
      * NULL means the ROM data has not been uploaded yet.
      */
     romData: bytea("rom_data"),
+    coverImageBase64: text("cover_image_base64").default(""),
 
     /**
      * ROM size in bytes.

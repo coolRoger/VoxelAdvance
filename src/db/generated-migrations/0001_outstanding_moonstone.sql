@@ -1,0 +1,1 @@
+ALTER TABLE "gba_rom" ALTER COLUMN "cover_image_base64" SET DEFAULT '';

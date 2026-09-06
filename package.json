@@ -11,7 +11,8 @@
         "start": "bun server.ts",
         "serve": "bunx --bun vite preview",
         "preview": "bunx --bun vite preview",
-        "format": "biome format --write"
+        "format": "biome format --write",
+        "db:migrate": "bunx drizzle-kit generate --config drizzle.config.ts && bun scripts/generate-client-migrations.ts"
     },
     "license": "MIT",
     "devDependencies": {
@@ -24,6 +25,7 @@
         "@types/bun": "^1.4.0",
         "@types/node": "^26.2.0",
         "@types/three": "^0.185.4",
+        "drizzle-kit": "0.31.10",
         "eslint-plugin-solid": "~0.17.0",
         "filesystem-routing": "0.2.1",
         "jsdom": "^25.0.1",

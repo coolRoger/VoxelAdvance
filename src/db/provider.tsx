@@ -1,4 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
+import type { PgDialect } from "drizzle-orm/pg-core/dialect";
 import { drizzle } from "drizzle-orm/pglite";
 import {
     createContext,
@@ -7,7 +8,22 @@ import {
     type ParentProps,
     useContext,
 } from "solid-js";
+import { migrations } from "./migrations";
 import type { T_DB } from "./types";
+
+async function initializeDatabase(client: PGlite) {
+    const database = drizzle(client);
+    const internalDatabase = database as typeof database & {
+        dialect: PgDialect;
+        session: Parameters<PgDialect["migrate"]>[1];
+    };
+    await internalDatabase.dialect.migrate(
+        migrations,
+        internalDatabase.session,
+        { migrationsFolder: "browser" },
+    );
+    return database;
+}
 
 const DBContext = createContext<{
     db: () => T_DB | null;
@@ -18,10 +34,32 @@ function DBProvider(props: ParentProps) {
     const [db, setDB] = createSignal<T_DB | null>(null);
 
     onSettled(() => {
-        const client = new PGlite("idb://voxel-advance");
-        const _db = drizzle(client);
-        window.db = _db;
-        setDB(_db);
+        let disposed = false;
+
+        const setupDatabase = async () => {
+            const client = new PGlite("idb://voxel-advance");
+            try {
+                await client._checkReady();
+
+                const _db = await initializeDatabase(client);
+                if (disposed) {
+                    await client.close();
+                    return;
+                }
+
+                window.db = _db;
+                setDB(_db);
+            } catch (cause: unknown) {
+                await client.close();
+                console.error("客户端数据库初始化失败", cause);
+            }
+        };
+
+        void setupDatabase();
+
+        return () => {
+            disposed = true;
+        };
     });
 
     async function importDB(db_file: File) {
@@ -34,11 +72,13 @@ function DBProvider(props: ParentProps) {
                 loadDataDir: db_file,
             });
 
+            await client._checkReady();
+
+            const _db = await initializeDatabase(client);
+
             if (db()?.$client) {
                 db()?.$client.close();
             }
-
-            const _db = drizzle(client);
 
             setDB(_db);
 
