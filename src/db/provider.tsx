@@ -11,7 +11,50 @@ import {
 import { migrations } from "./migrations";
 import type { T_DB } from "./types";
 
+const INITIAL_MIGRATION_TIME = migrations[0]?.folderMillis;
+
+async function baselineLegacyDatabase(client: PGlite) {
+    if (INITIAL_MIGRATION_TIME === undefined) {
+        return;
+    }
+
+    const tables = await client.query<{ table_name: string }>(
+        `SELECT table_name
+         FROM information_schema.tables
+         WHERE table_schema = 'public'
+           AND table_name IN ('gba_setting', 'gba_rom', 'gba_rom_state')`,
+    );
+    const legacyTables = new Set(tables.rows.map((table) => table.table_name));
+
+    if (
+        legacyTables.size !== 3 ||
+        !legacyTables.has("gba_setting") ||
+        !legacyTables.has("gba_rom") ||
+        !legacyTables.has("gba_rom_state")
+    ) {
+        return;
+    }
+
+    await client.exec(`
+        CREATE SCHEMA IF NOT EXISTS "drizzle";
+        CREATE TABLE IF NOT EXISTS "drizzle"."__drizzle_migrations" (
+            id SERIAL PRIMARY KEY,
+            hash text NOT NULL,
+            created_at bigint
+        );
+        INSERT INTO "drizzle"."__drizzle_migrations" ("hash", "created_at")
+        SELECT 'legacy-handwritten-sql-v1', ${INITIAL_MIGRATION_TIME}
+        WHERE NOT EXISTS (
+            SELECT 1 FROM "drizzle"."__drizzle_migrations"
+            WHERE "created_at" = ${INITIAL_MIGRATION_TIME}
+               OR "hash" = 'legacy-handwritten-sql-v1'
+        );
+    `);
+}
+
 async function initializeDatabase(client: PGlite) {
+    await baselineLegacyDatabase(client);
+
     const database = drizzle(client);
     const internalDatabase = database as typeof database & {
         dialect: PgDialect;
@@ -83,7 +126,9 @@ function DBProvider(props: ParentProps) {
             setDB(_db);
 
             window.db = _db;
-        } catch (_) {}
+        } catch (cause: unknown) {
+            console.error("客户端数据库初始化失败", cause);
+        }
     }
 
     return <DBContext value={{ db, importDB }}>{props.children}</DBContext>;

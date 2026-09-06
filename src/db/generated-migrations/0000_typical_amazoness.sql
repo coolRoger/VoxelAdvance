@@ -3,7 +3,6 @@ CREATE TABLE "gba_rom" (
 	"name" text NOT NULL,
 	"file_name" text,
 	"rom_data" "bytea",
-	"cover_image_base64" text,
 	"size" integer,
 	"checksum" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL

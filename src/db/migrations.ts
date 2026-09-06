@@ -4,10 +4,10 @@ import type { MigrationMeta } from "drizzle-orm/migrator";
 export const migrations: MigrationMeta[] = [
     {
         folderMillis: 1788675489050,
-        hash: "eeff14b4f7a548bcceaacc3d25f0af031e77187df1a05ffa772d3dde7cd72d8c",
+        hash: "cd9b9e4fd62e6e4c8ce27db8161cc23e8d72e373dd852f38d1f285be3d49851b",
         bps: true,
         sql: [
-            'CREATE TABLE "gba_rom" (\n\t"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t"name" text NOT NULL,\n\t"file_name" text,\n\t"rom_data" "bytea",\n\t"cover_image_base64" text,\n\t"size" integer,\n\t"checksum" text,\n\t"created_at" timestamp with time zone DEFAULT now() NOT NULL\n);\n',
+            'CREATE TABLE "gba_rom" (\n\t"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t"name" text NOT NULL,\n\t"file_name" text,\n\t"rom_data" "bytea",\n\t"size" integer,\n\t"checksum" text,\n\t"created_at" timestamp with time zone DEFAULT now() NOT NULL\n);\n',
             '\nCREATE TABLE "gba_rom_state" (\n\t"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t"rom_id" uuid NOT NULL,\n\t"slot" integer DEFAULT 0 NOT NULL,\n\t"state_data" "bytea",\n\t"created_at" timestamp with time zone DEFAULT now() NOT NULL,\n\t"updated_at" timestamp with time zone DEFAULT now() NOT NULL,\n\tCONSTRAINT "rom_states_rom_id_slot_unique" UNIQUE("rom_id","slot")\n);\n',
             '\nCREATE TABLE "gba_setting" (\n\t"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,\n\t"body_color" text DEFAULT \'#9BBC0F\' NOT NULL,\n\t"key_mapping" jsonb DEFAULT \'{}\'::jsonb NOT NULL,\n\t"frame_rate" integer DEFAULT 60 NOT NULL\n);\n',
             '\nALTER TABLE "gba_rom_state" ADD CONSTRAINT "gba_rom_state_rom_id_gba_rom_id_fk" FOREIGN KEY ("rom_id") REFERENCES "public"."gba_rom"("id") ON DELETE cascade ON UPDATE no action;',
@@ -15,10 +15,11 @@ export const migrations: MigrationMeta[] = [
     },
     {
         folderMillis: 1788676225018,
-        hash: "b931ed08dbebc3698eb5de93efb400cef3d592bb333e124c1a90f17fabde1a71",
+        hash: "2fe26de0f8b60f696ab58d27e5ec99de91b792e64632f080ea6f51fbfadd7971",
         bps: true,
         sql: [
-            'ALTER TABLE "gba_rom" ALTER COLUMN "cover_image_base64" SET DEFAULT \'\';',
+            'ALTER TABLE "gba_rom" ADD COLUMN IF NOT EXISTS "cover_image_base64" text;\n',
+            '\nALTER TABLE "gba_rom" ALTER COLUMN "cover_image_base64" SET DEFAULT \'\';',
         ],
     },
 ];
