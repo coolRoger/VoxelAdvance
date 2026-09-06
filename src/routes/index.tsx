@@ -1,7 +1,7 @@
 import { query, type RouteDefinition } from "@solidjs/router";
 import { createEffect, createSignal, For, onSettled, Show } from "solid-js";
 import GbaDevice from "@/components/gba-device";
-import { useDBContext } from "@/db/provider";
+import { useDBContext } from "@/contexts/db";
 import { GBASetting } from "@/db/repositry/gba_setting";
 import type { GBAKeyMapping } from "@/db/schema";
 
@@ -76,10 +76,7 @@ export default function Home() {
     });
 
     return (
-        <main class="relative h-screen w-screen overflow-hidden bg-[#f6f3ff] text-slate-900">
-            <div class="pointer-events-none absolute -top-36 -left-24 h-96 w-96 rounded-full bg-violet-300/35 blur-3xl" />
-            <div class="pointer-events-none absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-fuchsia-200/35 blur-3xl" />
-
+        <>
             <GbaDevice
                 shellColor={shellColor()}
                 gameROMBuffer={gameROMState()?.data}
@@ -142,6 +139,6 @@ export default function Home() {
                     </label>
                 </div>
             </fieldset>
-        </main>
+        </>
     );
 }

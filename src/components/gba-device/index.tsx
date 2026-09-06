@@ -1,4 +1,5 @@
 import { createEffect, createSignal, onSettled, Show } from "solid-js";
+import { css, cx } from "styled-system/css";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
 import { createGbaEmulator } from "./emu-gba-game";
 import { createGbaRenderer, type GbaRenderer } from "./render";
@@ -124,8 +125,25 @@ export function GbaDevice(props: GbaDeviceProps) {
                 class="absolute inset-0 cursor-grab active:cursor-grabbing"
             />
             <Show when={loading()}>
-                <div class="pointer-events-none absolute inset-0 grid place-items-center">
-                    <span class="loading loading-spinner loading-lg text-violet-700" />
+                <div
+                    class={css({
+                        pointerEvents: "none",
+                        position: "absolute",
+                        inset: 0,
+                        display: "grid",
+                        placeItems: "center",
+                    })}
+                >
+                    <span
+                        class={cx(
+                            "loading",
+                            "loading-spinner",
+                            "loading-lg",
+                            css({
+                                color: "var(--color-neutral)",
+                            }),
+                        )}
+                    />
                 </div>
             </Show>
             <Show when={error()}>

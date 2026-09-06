@@ -8,8 +8,8 @@ import {
     type ParentProps,
     useContext,
 } from "solid-js";
-import { migrations } from "./migrations";
-import type { T_DB } from "./types";
+import { migrations } from "@/db/migrations";
+import type { T_DB } from "@/db/types";
 
 const INITIAL_MIGRATION_TIME = migrations[0]?.folderMillis;
 
