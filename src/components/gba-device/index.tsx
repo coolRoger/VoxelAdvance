@@ -24,14 +24,14 @@ export function GbaDevice(props: GbaDeviceProps) {
 
     const [error, setError] = createSignal(false, { name: "gbaModelError" });
 
-    const powerMapping = () => props.keyMapping ?? DEFAULT_KEY_MAPPING;
+    const keyMapping = () => props.keyMapping ?? DEFAULT_KEY_MAPPING;
 
     const [poweredOn, setPoweredOn] = createSignal(true, {
         name: "gbaPoweredOn",
     });
 
     const handlePowerKey = (event: KeyboardEvent) => {
-        const mapping = powerMapping();
+        const mapping = keyMapping();
         if (event.code === mapping.PowerON) {
             event.preventDefault();
             void emulator?.powerOn();
@@ -59,7 +59,10 @@ export function GbaDevice(props: GbaDeviceProps) {
         { name: "syncGbaPowerState" },
     );
 
-    const startEmulator = async (gameROMBuffer: ArrayBuffer) => {
+    const startEmulator = async (params: {
+        gameROMBuffer: ArrayBuffer;
+        keyMaps: GBAKeyMapping;
+    }) => {
         const currentGeneration = ++emulatorGeneration;
         emulator?.dispose();
         emulator = undefined;
@@ -69,14 +72,18 @@ export function GbaDevice(props: GbaDeviceProps) {
         try {
             const session = await createGbaEmulator({
                 canvas: currentRenderer.getGameCanvas(),
-                gameROMBuffer,
+                gameROMBuffer: params.gameROMBuffer,
+                keyMaps: params.keyMaps,
                 onFrame: currentRenderer.invalidateGameTexture,
             });
+
             if (currentGeneration !== emulatorGeneration) {
                 session.dispose();
                 return;
             }
+
             emulator = session;
+
             if (!poweredOn()) session.powerOff();
         } catch (cause: unknown) {
             if (currentGeneration === emulatorGeneration) {
@@ -90,13 +97,17 @@ export function GbaDevice(props: GbaDeviceProps) {
         () => props.gameROMBuffer,
         (gameROMBuffer) => {
             if (!isArrayBuffer(gameROMBuffer)) return;
-            void startEmulator(gameROMBuffer);
+            void startEmulator({
+                gameROMBuffer,
+                keyMaps: keyMapping(),
+            });
         },
         { name: "restartGbaEmulator" },
     );
 
     onSettled(() => {
         window.addEventListener("keydown", handlePowerKey);
+
         renderer = createGbaRenderer({
             host,
             shellColor: props.shellColor,
@@ -105,7 +116,10 @@ export function GbaDevice(props: GbaDeviceProps) {
         });
 
         if (isArrayBuffer(props.gameROMBuffer)) {
-            void startEmulator(props.gameROMBuffer);
+            void startEmulator({
+                gameROMBuffer: props.gameROMBuffer,
+                keyMaps: keyMapping(),
+            });
         }
 
         return () => {
