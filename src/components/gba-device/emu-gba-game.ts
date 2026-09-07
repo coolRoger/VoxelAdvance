@@ -2,6 +2,21 @@ import type { GBA } from "gba-game";
 import { GameBoyAdvanceSoftwareRenderer } from "gba-game";
 import type { GbaEmulatorOptions, GbaEmulatorSession } from "./types";
 
+type PaletteMemory = {
+    store16(offset: number, value: number): void;
+    store8?: (offset: number, value: number) => void;
+};
+
+function installPaletteByteStore(palette: PaletteMemory) {
+    if (palette.store8) return;
+
+    // gba-game's palette omits store8, but the MMU can issue byte writes.
+    // Palette byte writes replicate the byte across the aligned halfword.
+    palette.store8 = (offset, value) => {
+        palette.store16(offset, (value << 8) | value);
+    };
+}
+
 export async function createGbaEmulator(
     options: GbaEmulatorOptions,
 ): Promise<GbaEmulatorSession> {
@@ -35,6 +50,8 @@ export async function createGbaEmulator(
     if (!loaded) {
         throw new Error("GBA ROM 无法启动");
     }
+
+    installPaletteByteStore(emulator.video.renderPath.palette);
 
     for (const object of emulator.video.renderPath.oam.objs) {
         object.pushPixel = GameBoyAdvanceSoftwareRenderer.pushPixel;

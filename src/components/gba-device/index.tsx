@@ -4,8 +4,8 @@ import type { GBAKeyMapping } from "@/db/schema";
 import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
 import { createGbaEmulator } from "./emu-gba-game";
-import { keyMappingToKeyCodes, type GbaEmulatorKeyMapping } from "./types";
 import { createGbaRenderer, type GbaRenderer } from "./render";
+import { type GbaEmulatorKeyMapping, keyMappingToKeyCodes } from "./types";
 
 export type GbaDeviceProps = {
     shellColor: string;

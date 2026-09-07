@@ -18,7 +18,7 @@ export default function Home() {
     onSettled(() => {
         const fetchGameROM = async () => {
             try {
-                const response = await fetch(`/games/pokemon_emerald_cn.gba`);
+                const response = await fetch(`/games/FA.gba`);
 
                 if (!response.ok) {
                     setGameROMState({
