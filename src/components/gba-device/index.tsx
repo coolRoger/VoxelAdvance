@@ -1,19 +1,15 @@
 import { createEffect, createSignal, onSettled, Show } from "solid-js";
 import { css, cx } from "styled-system/css";
+import type { GBAKeyMapping } from "@/db/schema";
+import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
 import { createGbaEmulator } from "./emu-gba-game";
 import { createGbaRenderer, type GbaRenderer } from "./render";
-import type { GbaPowerMapping } from "./types";
-
-const DEFAULT_POWER_MAPPING: GbaPowerMapping = {
-    PowerON: "KeyZ",
-    PowerOFF: "KeyX",
-};
 
 export type GbaDeviceProps = {
     shellColor: string;
     gameROMBuffer?: ArrayBuffer;
-    powerMapping?: GbaPowerMapping;
+    keyMapping?: GBAKeyMapping;
 };
 
 export function GbaDevice(props: GbaDeviceProps) {
@@ -21,11 +17,15 @@ export function GbaDevice(props: GbaDeviceProps) {
     let renderer: GbaRenderer | undefined;
     let emulator: Awaited<ReturnType<typeof createGbaEmulator>> | undefined;
     let emulatorGeneration = 0;
+
     const [loading, setLoading] = createSignal(true, {
         name: "gbaModelLoading",
     });
+
     const [error, setError] = createSignal(false, { name: "gbaModelError" });
-    const powerMapping = () => props.powerMapping ?? DEFAULT_POWER_MAPPING;
+
+    const powerMapping = () => props.keyMapping ?? DEFAULT_KEY_MAPPING;
+
     const [poweredOn, setPoweredOn] = createSignal(true, {
         name: "gbaPoweredOn",
     });

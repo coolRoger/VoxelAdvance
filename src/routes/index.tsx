@@ -1,48 +1,19 @@
-import { query, type RouteDefinition } from "@solidjs/router";
-import { createEffect, createSignal, For, onSettled, Show } from "solid-js";
+import type { RouteDefinition } from "@solidjs/router";
+import { createSignal, For, onSettled } from "solid-js";
 import GbaDevice from "@/components/gba-device";
-import { useDBContext } from "@/contexts/db";
-import { GBASetting } from "@/db/repositry/gba_setting";
-import type { GBAKeyMapping } from "@/db/schema";
+import { SHELL_COLORS_PRESETS } from "@/lib/constant/common";
+import { GBAStore, setGBAStore } from "@/stores/gba";
 
 export const route = {
     preload: () => {},
 } satisfies RouteDefinition;
 
-const shellColors = [
-    { name: "雾紫", value: "#8f86c9" },
-    { name: "冰川蓝", value: "#79a7c9" },
-    { name: "鼠尾草", value: "#82aa8a" },
-    { name: "珊瑚红", value: "#cb6f6d" },
-    { name: "经典靛蓝", value: "#514b9d" },
-    { name: "暖灰", value: "#a69f95" },
-] as const;
-
 export default function Home() {
-    const dbContext = useDBContext();
-    const [shellColor, setShellColor] = createSignal<string>(
-        shellColors[0].value,
-        { name: "gbaShellColor" },
-    );
-    const [keyMapping, setKeyMapping] = createSignal<GBAKeyMapping>();
-
     const [gameROMState, setGameROMState] = createSignal<{
         status: boolean;
         message: string;
         data?: ArrayBuffer;
     }>();
-
-    createEffect(
-        () => dbContext?.db(),
-        (db) => {
-            if (!db) return;
-            void new GBASetting(db).load().then((settings) => {
-                setShellColor(settings.bodyColor);
-                setKeyMapping(settings.keyMapping);
-            });
-        },
-        { name: "loadGbaSettings" },
-    );
 
     onSettled(() => {
         const fetchGameROM = async () => {
@@ -78,9 +49,9 @@ export default function Home() {
     return (
         <>
             <GbaDevice
-                shellColor={shellColor()}
+                shellColor={GBAStore.setting.bodyColor ?? ""}
                 gameROMBuffer={gameROMState()?.data}
-                powerMapping={keyMapping()}
+                keyMapping={GBAStore.setting.keyMapping}
             />
 
             <a
@@ -99,22 +70,27 @@ export default function Home() {
                 aria-label="机身颜色"
             >
                 <div class="flex flex-wrap justify-end gap-2">
-                    <For each={shellColors}>
+                    <For each={SHELL_COLORS_PRESETS}>
                         {(color) => (
                             <button
                                 type="button"
                                 class={{
                                     "group grid size-9 place-items-center rounded-full border border-white bg-white shadow-sm transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600": true,
                                     "ring-2 ring-slate-900 ring-offset-2 ring-offset-white/60":
-                                        shellColor() === color.value,
+                                        GBAStore.setting.bodyColor ===
+                                        color.value,
                                 }}
                                 aria-label={`将机身设为${color.name}`}
                                 aria-pressed={
-                                    shellColor() === color.value
+                                    GBAStore.setting.bodyColor === color.value
                                         ? "true"
                                         : "false"
                                 }
-                                onClick={() => setShellColor(color.value)}
+                                onClick={() => {
+                                    setGBAStore((state) => {
+                                        state.setting.bodyColor = color.value;
+                                    });
+                                }}
                             >
                                 <span
                                     class="size-7 rounded-full border border-black/10"
@@ -127,10 +103,13 @@ export default function Home() {
                         <input
                             type="color"
                             class="absolute inset-0 cursor-pointer opacity-0"
-                            value={shellColor()}
+                            value={GBAStore.setting.bodyColor ?? ""}
                             aria-label="选择自定义机身颜色"
                             onInput={(event) =>
-                                setShellColor(event.currentTarget.value)
+                                setGBAStore((state) => {
+                                    state.setting.bodyColor =
+                                        event.currentTarget.value;
+                                })
                             }
                         />
                         <span class="grid size-7 place-items-center rounded-full bg-conic/decreasing from-violet-500 via-cyan-400 to-rose-500 text-xs text-white">

@@ -1,25 +1,7 @@
 import { eq } from "drizzle-orm";
+import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 import DBInstance from "../instance";
 import { type GBAKeyMapping, gbaSetting } from "../schema";
-
-const DEFAULT_KEY_MAPPING: GBAKeyMapping = {
-    A: "KeyK",
-    B: "KeyJ",
-
-    START: "KeyN",
-    SELECT: "KeyM",
-
-    UP: "KeyW",
-    DOWN: "KeyS",
-    LEFT: "KeyA",
-    RIGHT: "KeyD",
-
-    L: "KeyU",
-    R: "KeyI",
-
-    PowerON: "KeyZ",
-    PowerOFF: "KeyX",
-};
 
 class GBASetting extends DBInstance {
     async load() {
