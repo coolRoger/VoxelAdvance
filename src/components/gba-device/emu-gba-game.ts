@@ -16,16 +16,16 @@ export async function createGbaEmulator(
 
     const emulator: GBA = new GBA({ throttle: 16 });
     emulator.logLevel = emulator.LOG_ERROR;
-    emulator.keypad.KEYCODE_UP = 87;
-    emulator.keypad.KEYCODE_LEFT = 65;
-    emulator.keypad.KEYCODE_DOWN = 83;
-    emulator.keypad.KEYCODE_RIGHT = 68;
-    emulator.keypad.KEYCODE_L = 81;
-    emulator.keypad.KEYCODE_R = 80;
-    emulator.keypad.KEYCODE_A = 74;
-    emulator.keypad.KEYCODE_B = 75;
-    emulator.keypad.KEYCODE_START = 78;
-    emulator.keypad.KEYCODE_SELECT = 77;
+    emulator.keypad.KEYCODE_UP = options.keyMaps.UP;
+    emulator.keypad.KEYCODE_LEFT = options.keyMaps.LEFT;
+    emulator.keypad.KEYCODE_DOWN = options.keyMaps.DOWN;
+    emulator.keypad.KEYCODE_RIGHT = options.keyMaps.RIGHT;
+    emulator.keypad.KEYCODE_L = options.keyMaps.L;
+    emulator.keypad.KEYCODE_R = options.keyMaps.R;
+    emulator.keypad.KEYCODE_A = options.keyMaps.A;
+    emulator.keypad.KEYCODE_B = options.keyMaps.B;
+    emulator.keypad.KEYCODE_START = options.keyMaps.START;
+    emulator.keypad.KEYCODE_SELECT = options.keyMaps.SELECT;
     emulator.keypad.eatInput = true;
     emulator.setCanvasDirect(options.canvas);
     emulator.video.drawCallback = options.onFrame;

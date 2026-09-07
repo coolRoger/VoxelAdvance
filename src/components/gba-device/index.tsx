@@ -4,6 +4,7 @@ import type { GBAKeyMapping } from "@/db/schema";
 import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
 import { createGbaEmulator } from "./emu-gba-game";
+import { keyMappingToKeyCodes, type GbaEmulatorKeyMapping } from "./types";
 import { createGbaRenderer, type GbaRenderer } from "./render";
 
 export type GbaDeviceProps = {
@@ -61,7 +62,7 @@ export function GbaDevice(props: GbaDeviceProps) {
 
     const startEmulator = async (params: {
         gameROMBuffer: ArrayBuffer;
-        keyMaps: GBAKeyMapping;
+        keyMaps: GbaEmulatorKeyMapping;
     }) => {
         const currentGeneration = ++emulatorGeneration;
         emulator?.dispose();
@@ -94,12 +95,27 @@ export function GbaDevice(props: GbaDeviceProps) {
     };
 
     createEffect(
-        () => props.gameROMBuffer,
-        (gameROMBuffer) => {
+        () => {
+            const mapping = keyMapping();
+            return [
+                props.gameROMBuffer,
+                mapping.A,
+                mapping.B,
+                mapping.START,
+                mapping.SELECT,
+                mapping.UP,
+                mapping.DOWN,
+                mapping.LEFT,
+                mapping.RIGHT,
+                mapping.L,
+                mapping.R,
+            ] as const;
+        },
+        ([gameROMBuffer]) => {
             if (!isArrayBuffer(gameROMBuffer)) return;
             void startEmulator({
                 gameROMBuffer,
-                keyMaps: keyMapping(),
+                keyMaps: keyMappingToKeyCodes(keyMapping()),
             });
         },
         { name: "restartGbaEmulator" },
@@ -118,7 +134,7 @@ export function GbaDevice(props: GbaDeviceProps) {
         if (isArrayBuffer(props.gameROMBuffer)) {
             void startEmulator({
                 gameROMBuffer: props.gameROMBuffer,
-                keyMaps: keyMapping(),
+                keyMaps: keyMappingToKeyCodes(keyMapping()),
             });
         }
 
