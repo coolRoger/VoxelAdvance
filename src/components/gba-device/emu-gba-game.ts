@@ -81,5 +81,6 @@ export async function createGbaEmulator(
             emulator.pause();
             void emulator.audio.context?.close();
         },
+        setKeyMapping: () => {},
     };
 }

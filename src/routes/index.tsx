@@ -25,6 +25,7 @@ export default function Home() {
                         status: false,
                         message: "GBA 游戏资源加载失败",
                     });
+                    return;
                 }
 
                 const arrayBuffer = await response.arrayBuffer();

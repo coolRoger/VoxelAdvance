@@ -40,6 +40,7 @@ export type GbaEmulatorOptions = {
 };
 
 export type GbaEmulatorSession = {
+    setKeyMapping: (mapping: GbaEmulatorKeyMapping) => void;
     powerOn: () => Promise<void>;
     powerOff: () => void;
     dispose: () => void;

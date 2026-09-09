@@ -1,11 +1,76 @@
+import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import solid from "@solidjs/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { pick } from "es-toolkit/compat";
 import { fileRoutes } from "filesystem-routing/vite";
 import { nitro } from "nitro/vite";
-import { loadEnv } from "vite";
+import { loadEnv, type Plugin } from "vite";
 import { defineConfig } from "vitest/config";
+
+function mgbaAssets(): Plugin {
+    const require = createRequire(import.meta.url);
+    const runtimeRoot = path.dirname(require.resolve("@thenick775/mgba-wasm"));
+    const assets = [
+        { name: "mgba.js", type: "text/javascript; charset=utf-8" },
+        { name: "mgba.wasm", type: "application/wasm" },
+    ];
+
+    return {
+        name: "mgba-raw-assets",
+        // Install before Vite's JS transforms and the SSR request handler.
+        enforce: "pre",
+        configureServer(server) {
+            const base = server.config.base;
+            server.middlewares.use(async (request, response, next) => {
+                const pathname = request.url?.split("?", 1)[0];
+                const asset = assets.find(
+                    ({ name }) => pathname === `${base}emulator/mgba/${name}`,
+                );
+                if (!asset) return next();
+                if (request.method !== "GET" && request.method !== "HEAD") {
+                    response.statusCode = 405;
+                    response.setHeader("Allow", "GET, HEAD");
+                    response.end();
+                    return;
+                }
+                try {
+                    // Keep Emscripten's import.meta.url and worker code intact.
+                    const source = await readFile(
+                        path.join(runtimeRoot, asset.name),
+                    );
+                    response.setHeader("Content-Type", asset.type);
+                    response.setHeader("Content-Length", source.byteLength);
+                    response.setHeader("Cache-Control", "no-cache");
+                    response.setHeader(
+                        "Cross-Origin-Embedder-Policy",
+                        "require-corp",
+                    );
+                    response.setHeader(
+                        "Cross-Origin-Opener-Policy",
+                        "same-origin",
+                    );
+                    response.end(
+                        request.method === "HEAD" ? undefined : source,
+                    );
+                } catch (error) {
+                    next(error);
+                }
+            });
+        },
+        async generateBundle() {
+            if (this.environment.name !== "client") return;
+            for (const asset of assets) {
+                this.emitFile({
+                    type: "asset",
+                    fileName: `emulator/mgba/${asset.name}`,
+                    source: await readFile(path.join(runtimeRoot, asset.name)),
+                });
+            }
+        },
+    };
+}
 
 export default defineConfig(({ mode }) => {
     const sys_env = loadEnv(mode, process.cwd(), "");
@@ -22,8 +87,8 @@ export default defineConfig(({ mode }) => {
     return {
         // Turnkey streaming SSR: no index.html and no entry files — the plugin
         // generates the entries around src/App.tsx, wrapped in src/Document.tsx.
-        // `vite build` emits static client assets to dist/client and the request
-        // handler to dist/server; `npm start` serves both with server.js.
+        // Nitro packages the server and client assets in .output;
+        // `bun run start` launches .output/server/index.mjs via server.ts.
         environments: {
             ssr: {
                 define: {
@@ -37,6 +102,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         plugins: [
+            mgbaAssets(),
             tailwindcss(),
             solid({
                 start: {
@@ -67,7 +133,17 @@ export default defineConfig(({ mode }) => {
             // routes). One router serves both sides: handler modules — and the
             // server-only code they import — never enter the client bundle.
             fileRoutes({ httpMethods: true, types: true }),
-            nitro({ serverEntry: false }),
+            nitro({
+                serverEntry: false,
+                routeRules: {
+                    "/**": {
+                        headers: {
+                            "Cross-Origin-Opener-Policy": "same-origin",
+                            "Cross-Origin-Embedder-Policy": "require-corp",
+                        },
+                    },
+                },
+            }),
         ],
         resolve: {
             alias: {

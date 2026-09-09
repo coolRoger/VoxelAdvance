@@ -1,9 +1,9 @@
-import { createEffect, createSignal, onSettled, Show } from "solid-js";
+import { createEffect, createSignal, onSettled, Show, untrack } from "solid-js";
 import { css, cx } from "styled-system/css";
 import type { GBAKeyMapping } from "@/db/schema";
 import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 import { isArrayBuffer } from "@/lib/utils/type-guard";
-import { createGbaEmulator } from "./emu-gba-game";
+import { createMgbaWasmEmulator as createGbaEmulator } from "./emu-mgba-wasm";
 import { createGbaRenderer, type GbaRenderer } from "./render";
 import { type GbaEmulatorKeyMapping, keyMappingToKeyCodes } from "./types";
 
@@ -18,6 +18,10 @@ export function GbaDevice(props: GbaDeviceProps) {
     let renderer: GbaRenderer | undefined;
     let emulator: Awaited<ReturnType<typeof createGbaEmulator>> | undefined;
     let emulatorGeneration = 0;
+    let currentRom: ArrayBuffer | undefined;
+    const [rendererReady, setRendererReady] = createSignal(false, {
+        name: "gbaRendererReady",
+    });
 
     const [loading, setLoading] = createSignal(true, {
         name: "gbaModelLoading",
@@ -64,6 +68,8 @@ export function GbaDevice(props: GbaDeviceProps) {
         gameROMBuffer: ArrayBuffer;
         keyMaps: GbaEmulatorKeyMapping;
     }) => {
+        if (currentRom === params.gameROMBuffer) return;
+        currentRom = params.gameROMBuffer;
         const currentGeneration = ++emulatorGeneration;
         emulator?.dispose();
         emulator = undefined;
@@ -84,8 +90,11 @@ export function GbaDevice(props: GbaDeviceProps) {
             }
 
             emulator = session;
+            session.setKeyMapping(
+                untrack(() => keyMappingToKeyCodes(keyMapping())),
+            );
 
-            if (!poweredOn()) session.powerOff();
+            if (!untrack(poweredOn)) session.powerOff();
         } catch (cause: unknown) {
             if (currentGeneration === emulatorGeneration) {
                 console.error("GBA 模拟器启动失败", cause);
@@ -97,26 +106,16 @@ export function GbaDevice(props: GbaDeviceProps) {
     createEffect(
         () => {
             const mapping = keyMapping();
-            return [
-                props.gameROMBuffer,
-                mapping.A,
-                mapping.B,
-                mapping.START,
-                mapping.SELECT,
-                mapping.UP,
-                mapping.DOWN,
-                mapping.LEFT,
-                mapping.RIGHT,
-                mapping.L,
-                mapping.R,
-            ] as const;
+            return {
+                ready: rendererReady(),
+                gameROMBuffer: props.gameROMBuffer,
+                keyMaps: keyMappingToKeyCodes(mapping),
+            };
         },
-        ([gameROMBuffer]) => {
-            if (!isArrayBuffer(gameROMBuffer)) return;
-            void startEmulator({
-                gameROMBuffer,
-                keyMaps: keyMappingToKeyCodes(keyMapping()),
-            });
+        ({ ready, gameROMBuffer, keyMaps }) => {
+            if (!ready || !isArrayBuffer(gameROMBuffer)) return;
+            emulator?.setKeyMapping(keyMaps);
+            void startEmulator({ gameROMBuffer, keyMaps });
         },
         { name: "restartGbaEmulator" },
     );
@@ -126,17 +125,12 @@ export function GbaDevice(props: GbaDeviceProps) {
 
         renderer = createGbaRenderer({
             host,
-            shellColor: props.shellColor,
+            shellColor: untrack(() => props.shellColor),
             onLoadingChange: setLoading,
             onError: () => setError(true),
         });
 
-        if (isArrayBuffer(props.gameROMBuffer)) {
-            void startEmulator({
-                gameROMBuffer: props.gameROMBuffer,
-                keyMaps: keyMappingToKeyCodes(keyMapping()),
-            });
-        }
+        setRendererReady(true);
 
         return () => {
             window.removeEventListener("keydown", handlePowerKey);
