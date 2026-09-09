@@ -81,14 +81,15 @@ export default defineConfig(({ mode }) => {
             "VITE_APP_NAME",
             "APP_PORT",
             "APP_URL",
+            "USE_NITRO",
         ]),
     } as const;
 
     return {
         // Turnkey streaming SSR: no index.html and no entry files — the plugin
         // generates the entries around src/App.tsx, wrapped in src/Document.tsx.
-        // Nitro packages the server and client assets in .output;
-        // `bun run start` launches .output/server/index.mjs via server.ts.
+        // VERCEL=1 时由 Nitro 生成 Vercel 产物；否则由 Solid 输出
+        // dist/client 和 dist/server/server.js，供 bun server.ts 启动。
         environments: {
             ssr: {
                 define: {
@@ -133,17 +134,20 @@ export default defineConfig(({ mode }) => {
             // routes). One router serves both sides: handler modules — and the
             // server-only code they import — never enter the client bundle.
             fileRoutes({ httpMethods: true, types: true }),
-            nitro({
-                serverEntry: false,
-                routeRules: {
-                    "/**": {
-                        headers: {
-                            "Cross-Origin-Opener-Policy": "same-origin",
-                            "Cross-Origin-Embedder-Policy": "require-corp",
+            env.USE_NITRO === "1" &&
+                nitro({
+                    preset: "vercel",
+                    // server.ts 是自建 Bun 启动器，不是 Nitro 入口。
+                    serverEntry: false,
+                    routeRules: {
+                        "/**": {
+                            headers: {
+                                "Cross-Origin-Opener-Policy": "same-origin",
+                                "Cross-Origin-Embedder-Policy": "require-corp",
+                            },
                         },
                     },
-                },
-            }),
+                }),
         ],
         resolve: {
             alias: {
