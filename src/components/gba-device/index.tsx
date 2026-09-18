@@ -22,15 +22,11 @@ export function GbaDevice(props: GbaDeviceProps) {
     const [rendererReady, setRendererReady] = createSignal(false, {
         name: "gbaRendererReady",
     });
-
     const [loading, setLoading] = createSignal(true, {
         name: "gbaModelLoading",
     });
-
     const [error, setError] = createSignal(false, { name: "gbaModelError" });
-
     const keyMapping = () => props.keyMapping ?? DEFAULT_KEY_MAPPING;
-
     const [poweredOn, setPoweredOn] = createSignal(true, {
         name: "gbaPoweredOn",
     });
@@ -55,7 +51,6 @@ export function GbaDevice(props: GbaDeviceProps) {
         },
         { name: "syncGbaShellColor" },
     );
-
     createEffect(
         () => poweredOn(),
         (isPoweredOn) => {
@@ -75,7 +70,6 @@ export function GbaDevice(props: GbaDeviceProps) {
         emulator = undefined;
         const currentRenderer = renderer;
         if (!currentRenderer) return;
-
         try {
             const session = await createGbaEmulator({
                 canvas: currentRenderer.getGameCanvas(),
@@ -83,17 +77,14 @@ export function GbaDevice(props: GbaDeviceProps) {
                 keyMaps: params.keyMaps,
                 onFrame: currentRenderer.invalidateGameTexture,
             });
-
             if (currentGeneration !== emulatorGeneration) {
                 session.dispose();
                 return;
             }
-
             emulator = session;
             session.setKeyMapping(
                 untrack(() => keyMappingToKeyCodes(keyMapping())),
             );
-
             if (!untrack(poweredOn)) session.powerOff();
         } catch (cause: unknown) {
             if (currentGeneration === emulatorGeneration) {
@@ -122,16 +113,13 @@ export function GbaDevice(props: GbaDeviceProps) {
 
     onSettled(() => {
         window.addEventListener("keydown", handlePowerKey);
-
         renderer = createGbaRenderer({
             host,
             shellColor: untrack(() => props.shellColor),
             onLoadingChange: setLoading,
             onError: () => setError(true),
         });
-
         setRendererReady(true);
-
         return () => {
             window.removeEventListener("keydown", handlePowerKey);
             emulatorGeneration += 1;
@@ -163,9 +151,7 @@ export function GbaDevice(props: GbaDeviceProps) {
                             "loading",
                             "loading-spinner",
                             "loading-lg",
-                            css({
-                                color: "var(--color-neutral)",
-                            }),
+                            css({ color: "var(--color-neutral)" }),
                         )}
                     />
                 </div>

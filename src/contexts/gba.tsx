@@ -21,6 +21,7 @@ function GBAProvider(props: ParentProps) {
                 setGBAStore((state) => {
                     state.inited = true;
                     state.setting.bodyColor = settings.bodyColor;
+                    state.setting.frameRate = settings.frameRate;
                     state.setting.keyMapping = settings.keyMapping;
                 });
             });

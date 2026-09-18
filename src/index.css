@@ -39,3 +39,30 @@
     --depth: 1;
     --noise: 1;
 }
+
+@keyframes settings-backdrop-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes settings-panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(1rem) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.settings-backdrop {
+    animation: settings-backdrop-in 180ms ease-out both;
+}
+.settings-panel {
+    animation: settings-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}

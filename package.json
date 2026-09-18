@@ -38,6 +38,8 @@
         "@ark-ui/solid": "^5.39.1",
         "@electric-sql/pglite": "^0.5.8",
         "@libsql/client": "^0.18.0",
+        "@phosphor-icons/core": "^2.1.1",
+        "@phosphor-icons/web": "^2.1.2",
         "@remix-run/cookie": "^0.5.4",
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "^2.0.0-next.19",

@@ -9,7 +9,9 @@ import {
     useContext,
 } from "solid-js";
 import { migrations } from "@/db/migrations";
+import { gbaROM, gbaSetting } from "@/db/schema";
 import type { T_DB } from "@/db/types";
+import { DEFAULT_KEY_MAPPING } from "@/lib/constant/common";
 
 const INITIAL_MIGRATION_TIME = migrations[0]?.folderMillis;
 
@@ -71,6 +73,8 @@ async function initializeDatabase(client: PGlite) {
 const DBContext = createContext<{
     db: () => T_DB | null;
     importDB: (db_file: File) => Promise<void>;
+    exportDB: () => Promise<void>;
+    resetDB: () => Promise<void>;
 }>();
 
 function DBProvider(props: ParentProps) {
@@ -120,18 +124,50 @@ function DBProvider(props: ParentProps) {
             const _db = await initializeDatabase(client);
 
             if (db()?.$client) {
-                db()?.$client.close();
+                await db()?.$client.close();
             }
 
             setDB(_db);
-
             window.db = _db;
         } catch (cause: unknown) {
-            console.error("客户端数据库初始化失败", cause);
+            console.error("客户端数据库导入失败", cause);
+            throw cause;
         }
     }
 
-    return <DBContext value={{ db, importDB }}>{props.children}</DBContext>;
+    async function exportDB() {
+        const client = db()?.$client;
+        if (!client) return;
+
+        const file = await client.dumpDataDir();
+        const url = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `voxel-advance-${new Date().toISOString().slice(0, 10)}.tar`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    async function resetDB() {
+        const database = db();
+        if (!database) return;
+
+        await database.delete(gbaROM);
+        await database.update(gbaSetting).set({
+            bodyColor: "#9BBC0F",
+            frameRate: 60,
+            keyMapping: DEFAULT_KEY_MAPPING,
+        });
+
+        setDB(database);
+        window.db = database;
+    }
+
+    return (
+        <DBContext value={{ db, importDB, exportDB, resetDB }}>
+            {props.children}
+        </DBContext>
+    );
 }
 
 function useDBContext() {

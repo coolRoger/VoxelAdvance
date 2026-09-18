@@ -8,6 +8,8 @@
         "@ark-ui/solid": "^5.39.1",
         "@electric-sql/pglite": "^0.5.8",
         "@libsql/client": "^0.18.0",
+        "@phosphor-icons/core": "^2.1.1",
+        "@phosphor-icons/web": "^2.1.2",
         "@remix-run/cookie": "^0.5.4",
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "^2.0.0-next.19",
@@ -393,6 +395,10 @@
     "@pandacss/token-dictionary": ["@pandacss/token-dictionary@1.12.0", "", { "dependencies": { "@pandacss/logger": "^1.12.0", "@pandacss/shared": "1.12.0", "@pandacss/types": "1.12.0", "picomatch": "4.0.4", "ts-pattern": "5.9.0" } }, "sha512-bBG/4fmDJFBdIwXJaZBOJDghfqjBgFl2IShGoyxPLvhDp6abhPw0LWPtggM8NIEqqSY1t2bJX72TptZqt5VOAQ=="],
 
     "@pandacss/types": ["@pandacss/types@1.12.0", "", {}, "sha512-PtlEIOBEV3RzWffeu1zH+/YFmP+fn24M63STGEbgTwjEBMhyo/FfT2sfZGB8oWAbWUBKBp69OMg25E+/rY3klQ=="],
+
+    "@phosphor-icons/core": ["@phosphor-icons/core@2.1.1", "", {}, "sha512-v4ARvrip4qBCImOE5rmPUylOEK4iiED9ZyKjcvzuezqMaiRASCHKcRIuvvxL/twvLpkfnEODCOJp5dM4eZilxQ=="],
+
+    "@phosphor-icons/web": ["@phosphor-icons/web@2.1.2", "", {}, "sha512-rPAR9o/bEcp4Cw4DEeZHXf+nlGCMNGkNDRizYHM47NLxz9vvEHp/Tt6FMK1NcWadzw/pFDPnRBGi/ofRya958A=="],
 
     "@remix-run/cookie": ["@remix-run/cookie@0.5.4", "", { "dependencies": { "@remix-run/headers": "0.21.1" } }, "sha512-QxV2yo0umBXxwMub8kZFC+nOFnGMVpGo3jQ1Gvs4p1n2N7/0LAKhPgKsWbsk5ab6EqVhpr0S+v9gSQON1nuyoA=="],
 
