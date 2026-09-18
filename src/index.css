@@ -66,3 +66,8 @@
 .settings-panel {
     animation: settings-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+:root {
+    --shadows-lg:
+        0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color) !important;
+}

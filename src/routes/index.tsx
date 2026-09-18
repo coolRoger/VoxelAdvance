@@ -1,5 +1,6 @@
 import type { RouteDefinition } from "@solidjs/router";
 import { createSignal, onSettled, Show } from "solid-js";
+import GitHubFooter from "@/components/common/github-footer";
 import { PhIcon } from "@/components/common/ph-icon";
 import GbaDevice from "@/components/gba-device";
 import SettingModal from "@/components/modals/settings";
@@ -68,7 +69,7 @@ export default function Home() {
                 class="absolute top-5 left-5 z-10 flex items-center gap-3 font-black tracking-tight sm:top-7 sm:left-8"
                 aria-label="Voxel Advance 首页"
             >
-                <span class="grid size-10 place-items-center rounded-xl bg-slate-950 text-xl text-white shadow-lg shadow-violet-300">
+                <span class="grid size-10 place-items-center rounded-xl bg-slate-950 text-xl text-white shadow-lg shadow-secondary/90">
                     ◈
                 </span>
                 <span>VOXEL ADVANCE</span>
@@ -114,6 +115,7 @@ export default function Home() {
                 open={settingsOpen()}
                 onClose={() => setSettingsOpen(false)}
             />
+            <GitHubFooter />
         </Show>
     );
 }
